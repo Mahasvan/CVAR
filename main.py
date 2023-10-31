@@ -5,8 +5,11 @@ import numpy as np
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)  # Use the desired dictionary type
 parameters =  cv2.aruco.DetectorParameters()
 detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
+
 running = cv2.imread('running.png')
+interrupted = cv2.imread('interrupted.png')
 done = cv2.imread('done.png')
+
 # Initialize the webcam
 cap = cv2.VideoCapture(0)
 
@@ -29,16 +32,19 @@ while True:
     if ids is not None:
         for marker_id, marker_corners in zip(ids, corners):
 
-            if timer_done:
-                image_to_overlay = done
-            else:
+            if timer_done == 0:
                 image_to_overlay = running
-
-            print(marker_id)
-            print(list(marker_corners[0]))
+            elif timer_done == 1:
+                image_to_overlay = done
+            elif timer_done == 2:
+                image_to_overlay = interrupted
+            
+            # print(marker_id)
+            # print(list(marker_corners[0]))
 
             marker_size = int(marker_corners[0][1][0] - marker_corners[0][0][0])
-            print(marker_size)
+
+            # print(marker_size)
 
             mask = np.zeros(frame.shape, dtype=np.uint8)
             cv2.fillPoly(mask, np.int32([marker_corners]), (255, 255, 255))
@@ -55,27 +61,25 @@ while True:
             perspective_transform = cv2.getPerspectiveTransform(dst_points, marker_corners)
 
             overlay_warped = cv2.warpPerspective(image_to_overlay, perspective_transform, (frame.shape[1], frame.shape[0]))
-            print(overlay_resized.shape, overlay_warped.shape)
+
+            # print(overlay_resized.shape, overlay_warped.shape)
 
             alpha = 0.4
             frame = cv2.addWeighted(frame, alpha, overlay_warped, 1-alpha, 1)
-            # frame_h, frame_w = frame.shape[:2]
-            # overlay_mask = np.zeros((frame_h, frame_w, 3), dtype=np.uint8)
-            
-            # # Copy the overlay onto the mask using the marker's corner points
-            # overlay_mask[int(marker_corners[0][0][1]):int(marker_corners[0][2][1]), int(marker_corners[0][0][0]):int(marker_corners[0][1][0])] = overlay_warped
-            
-            # # Add the mask to the frame
-            # frame = cv2.add(frame, overlay_mask)
 
 
     cv2.imshow('ArUco Marker with Overlay', frame)
 
     # Exit the loop when the 'q' key is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    waitkey = cv2.waitKey(1) & 0xFF
+    if waitkey == ord('q'):
         timer.stop_timer()
         print("Timer stopped.")
         break
+    elif waitkey == ord('r'):
+        print("Timer reset.")
+        timer.set_timer_interrupted()
+    
 
 # Release the webcam and close all OpenCV windows
 cap.release()

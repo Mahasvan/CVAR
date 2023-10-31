@@ -1,10 +1,38 @@
 import threading
 
 # initialize timer_done to False
-timer_done = False
+timer_done = 0
 lock = threading.Lock()
 
 timer_thread = None
+
+def set_timer_done():
+    global timer_done
+
+    if timer_done == 2:
+        return
+
+    lock.acquire()
+    timer_done = 1
+    lock.release()
+
+def set_timer_interrupted():
+    global timer_done
+    
+    lock.acquire()
+    timer_done = 2
+    lock.release()
+
+def timer(seconds):
+    global timer_thread
+    # create a timer thread that sets timer_done to True after `seconds` seconds
+    timer_thread = threading.Timer(seconds, lambda: set_timer_done())
+    timer_thread.start()
+
+def stop_timer():
+    global timer_thread
+    timer_thread.cancel()
+
 
 def get_seconds_from_input(input_time_str: str):
     """Thanks to CorpNewt for helping out with this function"""
@@ -56,20 +84,3 @@ def pretty_time_from_seconds(time_remaining: int):
     else:
         final_string = ", ".join(final_string_to_join)
     return final_string
-
-def set_timer_done():
-    global timer_done
-    
-    lock.acquire()
-    timer_done = True
-    lock.release()
-
-def timer(seconds):
-    global timer_done, timer_thread
-    # create a timer thread that sets timer_done to True after `seconds` seconds
-    timer_thread = threading.Timer(seconds, lambda: set_timer_done())
-    timer_thread.start()
-
-def stop_timer():
-    global timer_thread
-    timer_thread.cancel()
