@@ -12,9 +12,12 @@ cap = cv2.VideoCapture(0)
 
 import timer
 
-duration_string = input("Enter time for the timer: ")
-seconds = timer.get_time(duration_string)
+duration_string = input("Enter time for the timer (ex: 10m30s): ")
+seconds = timer.get_seconds_from_input(duration_string)
+
 timer.timer(seconds)
+
+print("Timer started for " + timer.pretty_time_from_seconds(seconds))
 
 while True:
     # Read a frame from the webcamz
@@ -70,6 +73,8 @@ while True:
 
     # Exit the loop when the 'q' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
+        timer.stop_timer()
+        print("Timer stopped.")
         break
 
 # Release the webcam and close all OpenCV windows
