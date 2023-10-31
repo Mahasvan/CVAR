@@ -5,24 +5,31 @@ import numpy as np
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)  # Use the desired dictionary type
 parameters =  cv2.aruco.DetectorParameters()
 detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
-overlay_image_1 = cv2.imread('image.png')
-overlay_image_2 = cv2.imread('image2.webp')
+running = cv2.imread('running.png')
+done = cv2.imread('done.png')
 # Initialize the webcam
 cap = cv2.VideoCapture(0)
 
-while True:
-    # Read a frame from the webcam
-    ret, frame = cap.read()
+import timer
 
+duration_string = input("Enter time for the timer: ")
+seconds = timer.get_time(duration_string)
+timer.timer(seconds)
+
+while True:
+    # Read a frame from the webcamz
+    ret, frame = cap.read()
+    from timer import timer_done
+    
     # Detect ArUco markers in the frame
     corners, ids, rejectedImgPoints = detector.detectMarkers(frame)
     if ids is not None:
         for marker_id, marker_corners in zip(ids, corners):
 
-            if marker_id[0] == 2:
-                image_to_overlay = overlay_image_2
+            if timer_done:
+                image_to_overlay = done
             else:
-                image_to_overlay = overlay_image_1
+                image_to_overlay = running
 
             print(marker_id)
             print(list(marker_corners[0]))
